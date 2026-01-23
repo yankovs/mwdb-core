@@ -109,21 +109,21 @@ class IOC(Object):
     ioc_type = db.Column(
         IOCTypeField,
         index=True,
-        nullable=False,
+        nullable=True,
         doc="Type of IOC - enforced as IOCType enum value"
     )
     
     value = db.Column(
         db.String(1024, collation="C"),
         index=True,
-        nullable=False,
+        nullable=True,
         doc="The IOC value (e.g., IP address, URL, domain name)"
     )
     
     severity = db.Column(
         IOCSeverityField,
         default=IOCSeverity.MEDIUM,
-        nullable=False,
+        nullable=True,
         doc="Severity level - enforced as IOCSeverity enum value"
     )
     
@@ -136,7 +136,7 @@ class IOC(Object):
     is_active = db.Column(
         db.Boolean,
         default=True,
-        nullable=False,
+        nullable=True,
         index=True,
         doc="Whether this IOC is currently active/relevant"
     )
