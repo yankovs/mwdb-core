@@ -1,7 +1,7 @@
 """Add group_admin column to member table
 
 Revision ID: e3241d250d0c
-Revises: e2d99ffcb8ce
+Revises: f5602d538e9c
 Create Date: 2020-09-17 15:24:00.140409
 
 """

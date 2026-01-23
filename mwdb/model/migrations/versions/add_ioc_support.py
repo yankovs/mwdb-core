@@ -6,7 +6,7 @@ This migration consolidates IOC table creation and configuration:
 - Adds CHECK constraints for ioc_type and severity enum validation
 
 Revision ID: 8f9a0b1c2d3e
-Revises: d7725a4e500c
+Revises: d7725a4e500c, 12849e43c922
 Create Date: 2026-01-23 13:00:00.000000
 
 """
@@ -16,7 +16,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "8f9a0b1c2d3e"
-down_revision = "d7725a4e500c"
+down_revision = ("d7725a4e500c", "12849e43c922")
 branch_labels = None
 depends_on = None
 
