@@ -133,13 +133,6 @@ class IOC(Object):
         doc="Source where this IOC was discovered (e.g., 'feed_name', 'external_source')"
     )
     
-    last_seen = db.Column(
-        db.DateTime,
-        nullable=True,
-        index=True,
-        doc="Timestamp when this IOC was last seen"
-    )
-    
     is_active = db.Column(
         db.Boolean,
         default=True,
