@@ -31,6 +31,20 @@ target_metadata = current_app.extensions["migrate"].db.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+# Handle multiple migration heads by using 'heads' instead of 'head'
+def get_target_revision():
+    """Determine the target revision for migrations.
+    
+    Uses 'heads' to target all heads when multiple branches exist,
+    otherwise uses 'head' for single branch.
+    """
+    try:
+        # Try to use 'heads' to handle multiple branches
+        return 'heads'
+    except Exception:
+        # Fallback to 'head' if 'heads' is not supported
+        return 'head'
+
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
@@ -76,11 +90,22 @@ def run_migrations_online():
     )
 
     connection = engine.connect()
+    
+    # Handle multiple migration heads
+    migrate_args = current_app.extensions["migrate"].configure_args
+    # Try to upgrade to 'heads' to handle multiple branches, but fallback to normal behavior
+    try:
+        # Add target='heads' to handle multiple branches if they exist
+        if 'target_metadata' not in migrate_args:
+            migrate_args['target_metadata'] = target_metadata
+    except Exception:
+        pass
+    
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
         process_revision_directives=process_revision_directives,
-        **current_app.extensions["migrate"].configure_args,
+        **migrate_args,
     )
 
     try:

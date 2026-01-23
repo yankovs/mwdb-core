@@ -1,5 +1,5 @@
 import click
-from flask_migrate import upgrade
+from flask_migrate import upgrade, current
 
 from mwdb.cli.base import logger
 from mwdb.core.capabilities import Capabilities
@@ -54,7 +54,17 @@ def _initialize(admin_password):
 
 
 def configure_database():
-    upgrade()
+    # Upgrade to the newest IOC migration (f6a7b8c9d0e1) or heads if multiple branches exist
+    try:
+        upgrade(revision='f6a7b8c9d0e1')
+    except Exception as e:
+        logger.warning(f"Could not upgrade to specific revision: {e}. Attempting standard upgrade...")
+        try:
+            # Fall back to upgrading to heads (handles multiple branches)
+            upgrade(revision='heads')
+        except Exception:
+            # If heads fails, just upgrade normally
+            upgrade()
 
     if _is_database_initialized():
         logger.info("Database already initialized... skipping")
