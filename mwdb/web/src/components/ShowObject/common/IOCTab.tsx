@@ -28,7 +28,7 @@ export function IOCTab() {
                 setError(null);
 
                 // Fetch all relations
-                const response = await api.getObjectRelations(context.object.id);
+                const response = await api.getObjectRelations(parseInt(context.object.id));
                 const allRelations = [
                     ...response.data.parents,
                     ...response.data.children,
@@ -59,7 +59,7 @@ export function IOCTab() {
 
                     try {
                         const childRelations = await api.getObjectRelations(
-                            child.id
+                            parseInt(child.id)
                         );
                         const childIOCs = [
                             ...childRelations.data.parents,

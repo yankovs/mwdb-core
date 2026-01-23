@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import { useParams } from "react-router-dom";
 import { APIContext } from "@mwdb-web/commons/api";
+import { ObjectContext } from "@mwdb-web/commons/context";
 import { useRemotePath } from "@mwdb-web/commons/remotes";
 import {
     ShowObject,
@@ -14,6 +15,12 @@ import {
 import { faVial, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { IOCDetailComponent } from "@mwdb-web/components/IOC";
 import { Extendable } from "@mwdb-web/commons/plugins";
+
+function IOCDetailsWrapper() {
+    const context = useContext(ObjectContext);
+    if (!context.object) return null;
+    return <IOCDetailComponent ioc={context.object as any} />;
+}
 
 export function ShowIOCView() {
     const api = useContext(APIContext);
@@ -33,7 +40,7 @@ export function ShowIOCView() {
                 <ObjectTab
                     tab="details"
                     icon={faVial}
-                    component={IOCDetailComponent}
+                    component={IOCDetailsWrapper}
                     actions={[
                         <FavoriteAction />,
                         <PullAction />,

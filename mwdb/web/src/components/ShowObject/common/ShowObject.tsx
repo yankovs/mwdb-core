@@ -127,7 +127,7 @@ export function ShowObject(props: Props) {
     );
 
     const updateObjectData = useCallback(
-        (objectData: Partial<ObjectData | ConfigData | BlobData>) => {
+        (objectData: Partial<ObjectOrConfigOrBlobData>) => {
             setObjectState({
                 type: objectUpdate,
                 object: objectData,

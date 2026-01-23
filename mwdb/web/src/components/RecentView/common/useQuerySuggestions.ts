@@ -154,6 +154,61 @@ const fieldDefinitions: Record<
             description: "Query for blob that matches provided list of IoCs",
         },
     },
+    ioc: {
+        value: {
+            description: "Query for IOC having a provided value",
+        },
+        ioc_type: {
+            description: "Query for IOC having a provided type",
+        },
+        severity: {
+            description: "Query for IOC having a provided severity level",
+        },
+        source: {
+            description: "Query for IOC from provided source",
+        },
+        dhash: {
+            description: "Data hash (sha256)",
+        },
+        tag: {
+            description: "Query IOCs with provided tag",
+        },
+        comment: {
+            description: "Query for comment contents",
+        },
+        attribute: {
+            description: "Query for object attribute value",
+            subfields: true,
+        },
+        shared: {
+            description: "Query for IOCs shared with provided user or group",
+        },
+        sharer: {
+            description: "Query for IOCs shared by provided user or group",
+        },
+        uploader: {
+            description: "Query for IOCs uploaded by provided user or group",
+        },
+        upload_time: {
+            description: "Query for IOCs uploaded at provided timestamp",
+        },
+        parent: {
+            description:
+                "Query for IOCs having parent that matches the condition",
+            subquery: true,
+        },
+        child: {
+            description:
+                "Query for IOCs having child that matches the condition",
+            subquery: true,
+        },
+        favorites: {
+            description: "Query for favorite IOCs of given user",
+        },
+        comment_author: {
+            description: "Query for IOCs commented by given user",
+        },
+    },
 };
 
 function getCurrentField(currentQuery: string): [string[], boolean] {
