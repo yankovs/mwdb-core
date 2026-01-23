@@ -61,6 +61,7 @@ class Object(db.Model):
         db.DateTime, nullable=False, index=True, default=datetime.datetime.utcnow
     )
     share_3rd_party = db.Column(db.Boolean, nullable=False)
+    last_seen = db.Column(db.DateTime, index=True, nullable=True)
 
     upload_count = column_property(
         select([func.count(distinct(ObjectPermission.related_user_id))])

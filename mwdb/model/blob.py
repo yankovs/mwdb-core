@@ -15,7 +15,6 @@ class TextBlob(Object):
     blob_size = db.Column(db.Integer, index=True)
     blob_type = db.Column(db.String(32, collation="C"), index=True)
     _content = db.Column("content", db.String())
-    last_seen = db.Column(db.DateTime, index=True)
 
     __mapper_args__ = {
         "polymorphic_identity": "text_blob",
