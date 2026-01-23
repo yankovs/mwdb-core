@@ -77,7 +77,7 @@ IOC_SUBFIELD_MAP = {
     "severity": IOC.severity,
     "source": IOC.source,
     "is_active": IOC.is_active,
-    "last_seen": Object.last_seen,
+    "last_seen": IOC.last_seen,
 }
 
 

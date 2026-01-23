@@ -102,7 +102,7 @@ field_mapping: Dict[str, Dict[str, BaseField]] = {
         "severity": StringField(IOC.severity),
         "source": StringField(IOC.source),
         "is_active": StringField(IOC.is_active),
-        "last_seen": DatetimeField(Object.last_seen),
+        "last_seen": DatetimeField(IOC.last_seen),
     },
 }
 
