@@ -1,22 +1,16 @@
 """Add IOC (Indicator of Compromise) support
 
-This migration consolidates IOC table creation and configuration:
-- Creates IOC table with all necessary columns
-- Creates IOC-Object relationship table for linking IOCs to other objects
-- Adds CHECK constraints for ioc_type and severity enum validation
-
-Revision ID: 8f9a0b1c2d3e
-Revises: 12849e43c922, 25ea40a798ac
-Create Date: 2026-01-23 13:00:00.000000
+Revision ID: f6a7b8c9d0e1
+Revises: 25ea40a798ac
+Create Date: 2026-01-23 13:30:00.000000
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "8f9a0b1c2d3e"
-down_revision = ("12849e43c922", "25ea40a798ac")
+revision = "f6a7b8c9d0e1"
+down_revision = "25ea40a798ac"
 branch_labels = None
 depends_on = None
 
