@@ -10,6 +10,7 @@ import {
     ShowObject,
     ObjectTab,
     RelationsTab,
+    IOCTab,
     DownloadAction,
     FavoriteAction,
     RemoveAction,
@@ -61,6 +62,7 @@ export function ShowConfigView() {
                         <RemoveAction />,
                     ]}
                 />
+                <IOCTab />
                 <RelationsTab />
                 <ObjectTab
                     tab="preview"

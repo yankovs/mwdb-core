@@ -13,6 +13,7 @@ import {
     PullAction,
     UploadChildAction,
     RemoveAction,
+    IOCTab,
 } from "../ShowObject";
 
 import {
@@ -72,6 +73,7 @@ export function ShowSampleView() {
                         <RemoveAction />,
                     ]}
                 />
+                <IOCTab />
                 <RelationsTab />
                 <ObjectTab
                     tab="preview"

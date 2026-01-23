@@ -5,6 +5,7 @@ import {
     ObjectTab,
     LatestConfigTab,
     RelationsTab,
+    IOCTab,
     DownloadAction,
     FavoriteAction,
     RemoveAction,
@@ -61,6 +62,7 @@ export function ShowTextBlobView() {
                         <RemoveAction />,
                     ]}
                 />
+                <IOCTab />
                 <RelationsTab />
                 <ObjectTab
                     tab="preview"

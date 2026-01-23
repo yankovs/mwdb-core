@@ -14,6 +14,7 @@ import {
     KartonAnalysis,
     ObjectData,
     ObjectListItem,
+    IOCListItem,
     ObjectOrConfigOrBlobData,
     Provider,
     Query,
@@ -78,6 +79,7 @@ export type GetObjectListResponse = Response<{
     configs?: ConfigListItem[];
     blobs?: BlobListItem[];
     objects?: ObjectListItem[];
+    iocs?: IOCListItem[];
 }>;
 
 export type GetObjectCountResponse = Response<{

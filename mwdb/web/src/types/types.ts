@@ -203,6 +203,7 @@ export type IOCData = ObjectCommonData & {
     is_active: boolean;
     last_seen?: string;
     type: "ioc";
+    // ObjectCommonData includes: attributes, children, shares, favorite, id, parents, tags, upload_time, share_3rd_party, analyses, latest_config, comments
 };
 
 export type Comment = {
@@ -319,7 +320,7 @@ export type CreateUser = {
     send_email: boolean;
 };
 
-export type ObjectOrConfigOrBlobData = ObjectData | ConfigData | BlobData;
+export type ObjectOrConfigOrBlobData = ObjectData | ConfigData | BlobData | IOCData;
 
 export type RelationItem = {
     id: string;
