@@ -8,10 +8,11 @@ import {
     ConfigData,
     ObjectData,
     ObjectType,
+    IOCListItem,
 } from "@mwdb-web/types/types";
 import { AxiosError } from "axios";
 
-type Elements = ObjectData[] | BlobData[] | ConfigData[];
+type Elements = ObjectData[] | BlobData[] | ConfigData[] | IOCListItem[];
 
 type ListStateReducerState = {
     pageToLoad: number;
@@ -134,6 +135,8 @@ export function RecentViewList(props: Props) {
                     elements = response.data.files as ObjectData[];
                 } else if (props.type === "object") {
                     elements = response.data.objects as ObjectData[];
+                } else if (props.type === "ioc") {
+                    elements = response.data.iocs as IOCListItem[];
                 } else throw new Error("Unexpected object type");
                 listDispatch({
                     type: "pageLoaded",

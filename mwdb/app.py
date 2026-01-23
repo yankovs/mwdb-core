@@ -51,6 +51,12 @@ from mwdb.resources.file import (
     FileResource,
 )
 from mwdb.resources.group import GroupListResource, GroupMemberResource, GroupResource
+from mwdb.resources.ioc import (
+    IOCAutoDetectResource,
+    IOCItemResource,
+    IOCResource,
+    IOCStatsResource,
+)
 from mwdb.resources.karton import KartonAnalysisResource, KartonObjectResource
 from mwdb.resources.metakey import (
     MetakeyDefinitionManageResource,
@@ -265,39 +271,39 @@ if app_config.mwdb.enable_3rd_party_sharing_consent:
     )
 
 # Count endpoint
-api.add_resource(ObjectCountResource, "/<any(file, config, blob, object):type>/count")
+api.add_resource(ObjectCountResource, "/<any(file, config, blob, object, ioc):type>/count")
 
 # Tag endpoints
 api.add_resource(TagListResource, "/tag")
 api.add_resource(
-    TagResource, "/<any(file, config, blob, object):type>/<hash64:identifier>/tag"
+    TagResource, "/<any(file, config, blob, object, ioc):type>/<hash64:identifier>/tag"
 )
 
 # Comment endpoints
 api.add_resource(
     CommentResource,
-    "/<any(file, config, blob, object):type>/" "<hash64:identifier>/comment",
+    "/<any(file, config, blob, object, ioc):type>/" "<hash64:identifier>/comment",
 )
 api.add_resource(
     CommentDeleteResource,
-    "/<any(file, config, blob, object):type>/"
+    "/<any(file, config, blob, object, ioc):type>/"
     "<hash64:identifier>/comment/<int:comment_id>",
 )
 
 # Share endpoints
 api.add_resource(
-    ShareResource, "/<any(file, config, blob, object):type>/<hash64:identifier>/share"
+    ShareResource, "/<any(file, config, blob, object, ioc):type>/<hash64:identifier>/share"
 )
 api.add_resource(ShareGroupListResource, "/share")
 
 # Relation endpoints
 api.add_resource(
     RelationsResource,
-    "/<any(file, config, blob, object):type>/<hash64:identifier>/relations",
+    "/<any(file, config, blob, object, ioc):type>/<hash64:identifier>/relations",
 )
 api.add_resource(
     ObjectChildResource,
-    "/<any(file, config, blob, object):type>/<hash64:parent>/child/<hash64:child>",
+    "/<any(file, config, blob, object, ioc):type>/<hash64:parent>/child/<hash64:child>",
 )
 
 # File endpoints
@@ -315,6 +321,12 @@ api.add_resource(ConfigItemResource, "/config/<hash64:identifier>")
 api.add_resource(TextBlobResource, "/blob")
 api.add_resource(TextBlobItemResource, "/blob/<hash64:identifier>")
 
+# IOC endpoints
+api.add_resource(IOCResource, "/ioc")
+api.add_resource(IOCItemResource, "/ioc/<hash64:identifier>")
+api.add_resource(IOCStatsResource, "/ioc/stats")
+api.add_resource(IOCAutoDetectResource, "/ioc/auto_detect")
+
 # Download endpoints
 api.add_resource(RequestSampleDownloadResource, "/request/sample/<identifier>")
 api.add_resource(DownloadResource, "/download/<access_token>")
@@ -324,18 +336,18 @@ api.add_resource(SearchResource, "/search")
 
 # Quick query endpoints
 api.add_resource(
-    QuickQueryResource, "/<any(file, config, blob, object):type>/quick_query"
+    QuickQueryResource, "/<any(file, config, blob, object, ioc):type>/quick_query"
 )
 api.add_resource(QuickQueryItemResource, "/quick_query/<int:id>")
 
 # Attribute endpoints
 api.add_resource(
     AttributeListResource,
-    "/<any(file, config, blob, object):type>/<hash64:identifier>/attribute",
+    "/<any(file, config, blob, object, ioc):type>/<hash64:identifier>/attribute",
 )
 api.add_resource(
     AttributeResource,
-    "/<any(file, config, blob, object):type>/<hash64:identifier>"
+    "/<any(file, config, blob, object, ioc):type>/<hash64:identifier>"
     "/attribute/<int:attribute_id>",
 )
 api.add_resource(AttributeDefinitionListResource, "/attribute")

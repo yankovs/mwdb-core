@@ -60,9 +60,9 @@ export type Group = {
     workspace: boolean;
 };
 
-export type ObjectType = "file" | "blob" | "config" | "object";
+export type ObjectType = "file" | "blob" | "config" | "object" | "ioc";
 
-export type ObjectLegacyType = "file" | "static_config" | "text_blob";
+export type ObjectLegacyType = "file" | "static_config" | "text_blob" | "ioc";
 
 export type Attribute = {
     key: string;
@@ -178,6 +178,31 @@ export type BlobListItem = {
     last_seen: string;
     type: "text_blob";
     tags: Tag[];
+};
+
+export type IOCListItem = {
+    id: string;
+    dhash: string;
+    ioc_type: string;
+    value: string;
+    severity: string;
+    source?: string;
+    is_active: boolean;
+    last_seen?: string;
+    upload_time: string;
+    tags: Tag[];
+    type: "ioc";
+};
+
+export type IOCData = ObjectCommonData & {
+    dhash: string;
+    ioc_type: string;
+    value: string;
+    severity: string;
+    source?: string;
+    is_active: boolean;
+    last_seen?: string;
+    type: "ioc";
 };
 
 export type Comment = {

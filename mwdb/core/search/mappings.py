@@ -4,6 +4,7 @@ from mwdb.model import (
     Comment,
     Config,
     File,
+    IOC,
     KartonAnalysis,
     Object,
     Tag,
@@ -20,9 +21,11 @@ from .fields import (
     DatetimeField,
     FavoritesField,
     FileNameField,
+    IOCTypeField,
     MultiBlobField,
     MultiConfigField,
     MultiFileField,
+    RelatedIOCField,
     RelationField,
     ShareField,
     SharerField,
@@ -41,6 +44,7 @@ object_mapping: Dict[str, Type[Object]] = {
     "static": Config,  # legacy
     "config": Config,
     "blob": TextBlob,
+    "ioc": IOC,
 }
 
 field_mapping: Dict[str, Dict[str, BaseField]] = {
@@ -72,12 +76,14 @@ field_mapping: Dict[str, Dict[str, BaseField]] = {
         "ssdeep": StringField(File.ssdeep),
         "crc32": StringField(File.crc32),
         "multi": MultiFileField(),
+        "ioc": RelatedIOCField(File),
     },
     Config.__name__: {
         "type": StringField(Config.config_type),
         "family": StringField(Config.family),
         "cfg": ConfigField(),
         "multi": MultiConfigField(),
+        "ioc": RelatedIOCField(Config),
     },
     TextBlob.__name__: {
         "name": StringField(TextBlob.blob_name),
@@ -87,6 +93,16 @@ field_mapping: Dict[str, Dict[str, BaseField]] = {
         "first_seen": DatetimeField(TextBlob.upload_time),
         "last_seen": DatetimeField(TextBlob.last_seen),
         "multi": MultiBlobField(),
+        "ioc": RelatedIOCField(TextBlob),
+    },
+    IOC.__name__: {
+        "ioc": IOCTypeField(),
+        "ioc_type": StringField(IOC.ioc_type),
+        "value": StringField(IOC.value),
+        "severity": StringField(IOC.severity),
+        "source": StringField(IOC.source),
+        "is_active": StringField(IOC.is_active),
+        "last_seen": DatetimeField(IOC.last_seen),
     },
 }
 

@@ -46,6 +46,7 @@ export function mapObjectType(objectType: string): string {
             file: "file",
             static_config: "config",
             text_blob: "blob",
+            ioc: "ioc",
         }[objectType] || objectType
     );
 }
@@ -58,6 +59,7 @@ export function mapObjectTypeToSearchPath(
             file: "/",
             static_config: "/configs",
             text_blob: "/blobs",
+            ioc: "/iocs",
         }[objectType] || objectType
     );
 }

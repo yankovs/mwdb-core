@@ -18,6 +18,7 @@ from mwdb.model import (
     Config,
     File,
     Group,
+    IOC,
     Member,
     Object,
     ObjectPermission,
@@ -50,6 +51,34 @@ from .parse_helpers import (
     transform_for_quoted_like_statement,
     unescape_string,
 )
+
+# IOC type mapping: user-friendly names to IOCType values
+IOC_TYPE_MAP = {
+    "ip": "ip",
+    "iprange": "iprange",
+    "url": "url",
+    "domain": "domain",
+    "email": "email",
+    "md5": "md5",
+    "sha1": "sha1",
+    "sha256": "sha256",
+    "sha512": "sha512",
+    "ssdeep": "ssdeep",
+    "file_path": "file_path",
+    "registry_key": "registry_key",
+    "c2_url": "c2_url",
+    "mutex": "mutex",
+    "process_name": "process_name",
+}
+
+# IOC subfield mapping: field names to IOC model columns
+IOC_SUBFIELD_MAP = {
+    "value": IOC.value,
+    "severity": IOC.severity,
+    "source": IOC.source,
+    "is_active": IOC.is_active,
+    "last_seen": IOC.last_seen,
+}
 
 
 class BaseField:
@@ -696,3 +725,142 @@ class FileNameField(BaseField):
             value_array = cast(array([unescaped_value]), ARRAY(String))
             alt_names_condition = File.alt_names.operate(CONTAINS, value_array)
         return or_(name_condition, alt_names_condition)
+
+
+class IOCTypeField(BaseField):
+    """
+    Field for querying IOCs by type with subfield support.
+    Supports: ioc.ip, ioc.domain, ioc.ip.severity, etc.
+    """
+    accepts_subpath = True
+
+    def _get_condition(self, node: Item, path_selector: PathSelector) -> Any:
+        """
+        Handles IOC type-based queries.
+        path_selector[0] is the IOC type (ip, domain, etc.)
+        path_selector[1:] are subfields (value, severity, etc.)
+        """
+        if len(path_selector) < 2:
+            raise FieldNotQueryableException(
+                "IOC query requires type and field (e.g., ioc.ip.value or ioc.domain.severity)"
+            )
+
+        ioc_type_str, _ = path_selector[0]
+        # Normalize IOC type string
+        ioc_type_str = ioc_type_str.lower()
+
+        if ioc_type_str not in IOC_TYPE_MAP:
+            valid_types = ", ".join(IOC_TYPE_MAP.keys())
+            raise FieldNotQueryableException(
+                f"Unknown IOC type '{ioc_type_str}'. Valid types: {valid_types}"
+            )
+
+        ioc_type_value = IOC_TYPE_MAP[ioc_type_str]
+
+        # Get the subfield (value, severity, source, etc.)
+        subfield_name, _ = path_selector[1]
+
+        if subfield_name not in IOC_SUBFIELD_MAP:
+            valid_fields = ", ".join(IOC_SUBFIELD_MAP.keys())
+            raise FieldNotQueryableException(
+                f"Unknown IOC subfield '{subfield_name}'. Valid fields: {valid_fields}"
+            )
+
+        # Filter by IOC type first
+        type_condition = IOC.ioc_type == ioc_type_value
+        
+        # Get condition for the subfield
+        subfield_column = IOC_SUBFIELD_MAP[subfield_name]
+        
+        # Create a new path selector for the subfield query
+        subfield_path_selector = path_selector[2:]
+        if not subfield_path_selector:
+            # Default to value field if not specified
+            subfield_path_selector = [(subfield_name, None)]
+
+        # Use appropriate field type for the subfield
+        if subfield_name == "last_seen":
+            subfield_field = DatetimeField(subfield_column)
+        else:
+            subfield_field = StringField(subfield_column)
+
+        subfield_condition = subfield_field._get_condition(node, subfield_path_selector)
+
+        return and_(type_condition, subfield_condition)
+
+
+class RelatedIOCField(BaseField):
+    """
+    Field for querying objects by related IOCs.
+    Supports: file.ioc.ip, config.ioc.domain, etc.
+    Usage: file.ioc.ip:192.168.1.1 finds files with that IP IOC related
+    """
+    accepts_subpath = True
+
+    def __init__(self, object_class: Type[Object]):
+        self.object_class = object_class
+
+    def _get_condition(self, node: Item, path_selector: PathSelector) -> Any:
+        """
+        Handles related IOC queries.
+        path_selector[0] is the IOC type (ip, domain, etc.)
+        path_selector[1:] are IOC subfields (value, severity, etc.)
+        """
+        if len(path_selector) < 2:
+            raise FieldNotQueryableException(
+                "Related IOC query requires type and field (e.g., file.ioc.ip.value)"
+            )
+
+        ioc_type_str, _ = path_selector[0]
+        ioc_type_str = ioc_type_str.lower()
+
+        if ioc_type_str not in IOC_TYPE_MAP:
+            valid_types = ", ".join(IOC_TYPE_MAP.keys())
+            raise FieldNotQueryableException(
+                f"Unknown IOC type '{ioc_type_str}'. Valid types: {valid_types}"
+            )
+
+        ioc_type_value = IOC_TYPE_MAP[ioc_type_str]
+
+        # Get the subfield (value, severity, source, etc.)
+        subfield_name, _ = path_selector[1]
+
+        if subfield_name not in IOC_SUBFIELD_MAP:
+            valid_fields = ", ".join(IOC_SUBFIELD_MAP.keys())
+            raise FieldNotQueryableException(
+                f"Unknown IOC subfield '{subfield_name}'. Valid fields: {valid_fields}"
+            )
+
+        subfield_column = IOC_SUBFIELD_MAP[subfield_name]
+
+        # Build query: find objects related to IOCs with specified type and value
+        # Using the ioc_object relationship table
+        from mwdb.model.ioc import ioc_object
+
+        # Create IOC query conditions
+        ioc_type_condition = IOC.ioc_type == ioc_type_value
+
+        # Get condition for the subfield value
+        subfield_path_selector = path_selector[2:]
+        if not subfield_path_selector:
+            subfield_path_selector = [(subfield_name, None)]
+
+        if subfield_name == "last_seen":
+            subfield_field = DatetimeField(subfield_column)
+        else:
+            subfield_field = StringField(subfield_column)
+
+        subfield_condition = subfield_field._get_condition(node, subfield_path_selector)
+
+        # Combine conditions for IOC
+        ioc_condition = and_(ioc_type_condition, subfield_condition)
+
+        # Find this object in relationship with matching IOC
+        return Object.id.in_(
+            select([ioc_object.c.object_id]).where(
+                IOC.id.in_(
+                    select([ioc_object.c.ioc_id]).where(ioc_condition)
+                )
+            )
+        )
+

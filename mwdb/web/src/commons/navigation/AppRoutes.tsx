@@ -15,11 +15,13 @@ import { RequiresAuth, RequiresCapability } from "../ui";
 import { RecentSamplesView } from "@mwdb-web/components/File/Views/RecentSamplesView";
 import { RecentConfigsView } from "@mwdb-web/components/Config/Views/RecentConfigsView";
 import { RecentBlobsView } from "@mwdb-web/components/Blob/Views/RecentBlobsView";
+import { RecentIOCsView } from "@mwdb-web/components/IOC/Views/RecentIOCsView";
 import { ConfigStatsView } from "@mwdb-web/components/Config/Views/ConfigStatsView";
 import { DocsView } from "@mwdb-web/components/Views/DocsView";
 import { ShowSampleView } from "@mwdb-web/components/Views/ShowSampleView";
 import { ShowConfigView } from "@mwdb-web/components/Config/Views/ShowConfigView";
 import { ShowTextBlobView } from "@mwdb-web/components/Blob/Views/ShowTextBlobView";
+import { ShowIOCView } from "@mwdb-web/components/Views/ShowIOCView";
 import { ProfileView } from "@mwdb-web/components/Profile/ProfileView";
 import { ProfileGroup } from "@mwdb-web/components/Profile/Views/ProfileGroup";
 import { ProfileDetails } from "@mwdb-web/components/Profile/Views/ProfileDetails";
@@ -78,6 +80,7 @@ export function AppRoutes() {
                 <Route path="/" element={<RecentSamplesView />} />
                 <Route path="configs" element={<RecentConfigsView />} />
                 <Route path="blobs" element={<RecentBlobsView />} />
+                <Route path="iocs" element={<RecentIOCsView />} />
                 <Route path="search" element={<SearchView />} />
                 <Route
                     path="upload"
@@ -115,6 +118,7 @@ export function AppRoutes() {
                 <Route path="file/:hash/*" element={<ShowSampleView />} />
                 <Route path="config/:hash/*" element={<ShowConfigView />} />
                 <Route path="blob/:hash/*" element={<ShowTextBlobView />} />
+                <Route path="ioc/:hash/*" element={<ShowIOCView />} />
                 <Route path="profile" element={<ProfileView />}>
                     <Route index element={<ProfileDetails />} />
                     <Route path="user/:user" element={<ProfileDetails />} />
@@ -144,10 +148,12 @@ export function AppRoutes() {
                     <Route index element={<RecentSamplesView />} />
                     <Route path="configs" element={<RecentConfigsView />} />
                     <Route path="blobs" element={<RecentBlobsView />} />
+                    <Route path="iocs" element={<RecentIOCsView />} />
                     <Route path="search" element={<SearchView />} />
                     <Route path="file/:hash/*" element={<ShowSampleView />} />
                     <Route path="config/:hash/*" element={<ShowConfigView />} />
                     <Route path="blob/:hash/*" element={<ShowTextBlobView />} />
+                    <Route path="ioc/:hash/*" element={<ShowIOCView />} />
                     <Route
                         path="diff/:current/:previous"
                         element={<DiffTextBlobView />}
