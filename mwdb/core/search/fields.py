@@ -882,16 +882,38 @@ class RelatedIOCField(BaseField):
         ioc_condition = and_(ioc_type_condition, subfield_condition)
 
         # Find this object in relationship with matching IOC
-        # Use explicit select_from to avoid correlation issues
+        # Check BOTH the ioc_object relationship table AND the standard parent/child relationships
         from mwdb.model.ioc import ioc_object
+        from mwdb.model.object import relation
 
-        ioc_ids_subquery = select([ioc_object.c.ioc_id]).select_from(ioc_object).join(
+        # Method 1: Using the ioc_object relationship table
+        ioc_ids_subquery_direct = select([ioc_object.c.ioc_id]).select_from(ioc_object).join(
             IOC, ioc_object.c.ioc_id == IOC.id
         ).where(ioc_condition)
 
-        return Object.id.in_(
+        direct_ioc_condition = Object.id.in_(
             select([ioc_object.c.object_id]).select_from(ioc_object).where(
-                ioc_object.c.ioc_id.in_(ioc_ids_subquery)
+                ioc_object.c.ioc_id.in_(ioc_ids_subquery_direct)
             )
         )
+
+        # Method 2: Using standard parent/child relationships
+        ioc_ids_subquery_relation = select([IOC.id]).where(ioc_condition)
+
+        # Find objects that have the matching IOC as a parent (child relationship)
+        child_ioc_condition = Object.id.in_(
+            select([relation.c.parent_id]).select_from(relation).join(
+                IOC, relation.c.child_id == IOC.id
+            ).where(ioc_condition)
+        )
+
+        # Find objects that have the matching IOC as a child (parent relationship)
+        parent_ioc_condition = Object.id.in_(
+            select([relation.c.child_id]).select_from(relation).join(
+                IOC, relation.c.parent_id == IOC.id
+            ).where(ioc_condition)
+        )
+
+        # Combine all conditions: direct ioc_object relation OR standard parent relation OR standard child relation
+        return or_(direct_ioc_condition, child_ioc_condition, parent_ioc_condition)
 
