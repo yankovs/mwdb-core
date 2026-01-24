@@ -1,4 +1,7 @@
 import { useContext, useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { APIContext } from "@mwdb-web/commons/api";
 import { ObjectContext } from "@mwdb-web/commons/context";
 import { ObjectTab } from "@mwdb-web/commons/ui";
@@ -6,6 +9,8 @@ import { faVial } from "@fortawesome/free-solid-svg-icons";
 import { IOCTypeBadge, IOCSeverityBadge } from "@mwdb-web/components/IOC";
 import { ObjectLink } from "@mwdb-web/commons/ui";
 import { RelatedObject } from "@mwdb-web/types/types";
+import { IOCAddModal } from "../Actions/IOCAddModal";
+import { getErrorMessage } from "@mwdb-web/commons/helpers";
 
 type IOCGroup = {
     [key: string]: RelatedObject[];
@@ -18,6 +23,7 @@ export function IOCTab() {
     const [transitiveIOCs, setTransitiveIOCs] = useState<IOCGroup>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isIOCAddModalOpen, setIOCAddModalOpen] = useState<boolean>(false);
 
     useEffect(() => {
         const loadIOCs = async () => {
@@ -96,6 +102,59 @@ export function IOCTab() {
         loadIOCs();
     }, [context.object?.id, api]);
 
+    const handleAddIOC = async (ioc_type: string, value: string) => {
+        if (!context.object?.id) return;
+
+        try {
+            // Create the IOC
+            const createResponse = await api.createIOC(
+                ioc_type,
+                value,
+                undefined,
+                undefined,
+                true,
+                undefined,
+                undefined,
+                false
+            );
+
+            // Add relation between the current object and the IOC
+            const iocId = createResponse.data.id;
+            await api.addObjectRelation(context.object.id, iocId);
+
+            // Refresh the IOCs list
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            const response = await api.getObjectRelations(context.object.id);
+            const allRelations = [
+                ...response.data.parents,
+                ...response.data.children,
+            ];
+
+            // Filter for IOC objects
+            const iocRelations = allRelations.filter(
+                (rel) => rel.type === "ioc"
+            );
+
+            // Group IOCs by type
+            const immediateByType: IOCGroup = {};
+            iocRelations.forEach((ioc) => {
+                const iocType = ioc.type || "unknown";
+                if (!immediateByType[iocType]) {
+                    immediateByType[iocType] = [];
+                }
+                immediateByType[iocType].push(ioc);
+            });
+
+            setImmediateIOCs(immediateByType);
+            setIOCAddModalOpen(false);
+            toast("IOC added successfully", { type: "success" });
+        } catch (err: any) {
+            const errorMessage = getErrorMessage(err);
+            toast(errorMessage, { type: "error" });
+            console.error("Error adding IOC:", err);
+        }
+    };
+
     const renderIOCGroup = (iocsMap: IOCGroup, title: string) => {
         const hasIOCs = Object.keys(iocsMap).length > 0;
 
@@ -157,43 +216,59 @@ export function IOCTab() {
     };
 
     return (
-        <ObjectTab
-            tab="iocs"
-            icon={faVial}
-            dropdownActions={false}
-            component={() => (
-                <div className="card-body">
-                    {loading && (
-                        <div className="text-center">
-                            <div className="spinner-border" role="status">
-                                <span className="sr-only">Loading...</span>
+        <>
+            <IOCAddModal
+                isOpen={isIOCAddModalOpen}
+                onRequestModalClose={() => setIOCAddModalOpen(false)}
+                onSubmit={handleAddIOC}
+            />
+            <ObjectTab
+                tab="iocs"
+                icon={faVial}
+                dropdownActions={false}
+                component={() => (
+                    <div className="card-body">
+                        <div className="mb-3">
+                            <button
+                                className="btn btn-sm btn-primary"
+                                onClick={() => setIOCAddModalOpen(true)}
+                                title="Add IOC"
+                            >
+                                <FontAwesomeIcon icon={faPlus} /> Add IOC
+                            </button>
+                        </div>
+                        {loading && (
+                            <div className="text-center">
+                                <div className="spinner-border" role="status">
+                                    <span className="sr-only">Loading...</span>
+                                </div>
                             </div>
-                        </div>
-                    )}
-                    {error && (
-                        <div className="alert alert-danger" role="alert">
-                            {error}
-                        </div>
-                    )}
-                    {!loading && !error && (
-                        <>
-                            {renderIOCGroup(immediateIOCs, "Direct IOCs")}
-                            {Object.keys(transitiveIOCs).length > 0 && (
-                                renderIOCGroup(
-                                    transitiveIOCs,
-                                    "IOCs from Related Objects"
-                                )
-                            )}
-                            {Object.keys(immediateIOCs).length === 0 &&
-                                Object.keys(transitiveIOCs).length === 0 && (
-                                    <p className="text-muted">
-                                        No related IOCs found
-                                    </p>
+                        )}
+                        {error && (
+                            <div className="alert alert-danger" role="alert">
+                                {error}
+                            </div>
+                        )}
+                        {!loading && !error && (
+                            <>
+                                {renderIOCGroup(immediateIOCs, "Direct IOCs")}
+                                {Object.keys(transitiveIOCs).length > 0 && (
+                                    renderIOCGroup(
+                                        transitiveIOCs,
+                                        "IOCs from Related Objects"
+                                    )
                                 )}
-                        </>
-                    )}
-                </div>
-            )}
-        />
+                                {Object.keys(immediateIOCs).length === 0 &&
+                                    Object.keys(transitiveIOCs).length === 0 && (
+                                        <p className="text-muted">
+                                            No related IOCs found
+                                        </p>
+                                    )}
+                            </>
+                        )}
+                    </div>
+                )}
+            />
+        </>
     );
 }

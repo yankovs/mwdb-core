@@ -628,6 +628,28 @@ function uploadConfig(body: UploadConfigRequest): UploadConfigResponse {
     return axios.post("/config", body);
 }
 
+function createIOC(
+    ioc_type: string,
+    value: string,
+    severity?: string,
+    source?: string,
+    is_active?: boolean,
+    parent?: string,
+    shareWith?: string,
+    share3rdParty?: boolean
+) {
+    return axios.post("/ioc", {
+        ioc_type,
+        value,
+        severity: severity || "medium",
+        source,
+        is_active: is_active !== false,
+        parent: parent || null,
+        upload_as: shareWith,
+        share_3rd_party: share3rdParty,
+    });
+}
+
 function getRemoteNames(): GetRemoteNamesResponse {
     return axios.get("/remote");
 }
@@ -870,6 +892,7 @@ export const api = {
     uploadFile,
     uploadBlob,
     uploadConfig,
+    createIOC,
     getRemoteNames,
     pushObjectRemote,
     pullObjectRemote,
