@@ -60,6 +60,7 @@ class Object(db.Model):
     upload_time = db.Column(
         db.DateTime, nullable=False, index=True, default=datetime.datetime.utcnow
     )
+    last_seen = db.Column(db.DateTime, nullable=True, index=True)
     share_3rd_party = db.Column(db.Boolean, nullable=False)
 
     upload_count = column_property(
