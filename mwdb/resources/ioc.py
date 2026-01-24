@@ -19,7 +19,7 @@ from mwdb.schema.ioc import (
     IOCStatsResponseSchema,
 )
 
-from . import load_schema, requires_authorization, requires_capabilities
+from . import load_schema, requires_authorization, requires_capabilities, access_object
 from .object import ObjectItemResource, ObjectResource, ObjectUploader
 
 
@@ -451,8 +451,9 @@ class IOCBatchResource(Resource):
         schema = self.ItemResponseSchema()
         
         for ioc_id in ids:
-            ioc_obj = IOC.query.filter_by(dhash=ioc_id).first()
-            if ioc_obj and g.auth_user.can_read_object(ioc_obj):
+            # Use access_object to check access control
+            ioc_obj = access_object("ioc", ioc_id)
+            if ioc_obj:
                 ioc_items.append(schema.dump(ioc_obj))
         
         return {"iocs": ioc_items}
