@@ -102,29 +102,14 @@ export function IOCTab() {
         loadIOCs();
     }, [context.object?.id, api]);
 
-    const handleAddIOC = async (ioc_type: string, value: string) => {
+    const refreshIOCList = async () => {
         if (!context.object?.id) return;
 
         try {
-            // Create the IOC
-            const createResponse = await api.createIOC(
-                ioc_type,
-                value,
-                undefined,
-                undefined,
-                true,
-                undefined,
-                undefined,
-                false
-            );
+            setError(null);
 
-            // Add relation between the current object and the IOC
-            const iocId = createResponse.data.id;
-            await api.addObjectRelation(context.object.id, iocId);
-
-            // Refresh the IOCs list
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            const response = await api.getObjectRelations(context.object.id);
+            // Fetch all relations
+            const response = await api.getObjectRelations(context.object.id!);
             const allRelations = [
                 ...response.data.parents,
                 ...response.data.children,
@@ -146,7 +131,70 @@ export function IOCTab() {
             });
 
             setImmediateIOCs(immediateByType);
+
+            // For transitive IOCs, fetch children and their IOCs
+            const transitiveByType: IOCGroup = {};
+
+            for (const child of response.data.children) {
+                if (child.type === "ioc") continue; // Skip direct IOCs
+
+                try {
+                    const childRelations = await api.getObjectRelations(child.id);
+
+                    const childIOCs = [
+                        ...childRelations.data.parents,
+                        ...childRelations.data.children,
+                    ].filter((rel) => rel.type === "ioc");
+
+                    childIOCs.forEach((ioc) => {
+                        const iocType = ioc.type || "unknown";
+                        if (!transitiveByType[iocType]) {
+                            transitiveByType[iocType] = [];
+                        }
+                        // Avoid duplicates
+                        if (
+                            !transitiveByType[iocType].some(
+                                (existing) => existing.id === ioc.id
+                            )
+                        ) {
+                            transitiveByType[iocType].push(ioc);
+                        }
+                    });
+                } catch (err) {
+                    // Silently skip errors for individual child relations
+                }
+            }
+
+            setTransitiveIOCs(transitiveByType);
+        } catch (err) {
+            setError("Failed to refresh IOCs");
+            console.error("Error refreshing IOCs:", err);
+        }
+    };
+
+    const handleAddIOC = async (ioc_type: string, value: string) => {
+        if (!context.object?.id) return;
+
+        try {
+            // Create the IOC
+            const createResponse = await api.createIOC(
+                ioc_type,
+                value,
+                undefined,
+                undefined,
+                true,
+                undefined,
+                undefined,
+                false
+            );
+
+            // Add relation between the current object and the IOC
+            const iocId = createResponse.data.id;
+            await api.addObjectRelation(context.object.id, iocId);
+
+            // Close modal and refresh the IOCs list
             setIOCAddModalOpen(false);
+            await refreshIOCList();
             toast("IOC added successfully", { type: "success" });
         } catch (err: any) {
             const errorMessage = getErrorMessage(err);

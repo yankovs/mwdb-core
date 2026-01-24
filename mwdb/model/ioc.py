@@ -289,10 +289,8 @@ class IOC(Object):
                 f"ioc_type must be IOCType enum or string, got {type(ioc_type)}"
             )
         
-        # Create unique dhash from IOC type and value
+        # Validate and normalize value
         value = value.strip() if value else ""
-        dhash_input = f"{ioc_type_enum.value}:{value}".encode("utf-8")
-        dhash = hashlib.sha256(dhash_input).hexdigest()
         
         ioc_obj = IOC(
             ioc_type=ioc_type_enum,
@@ -300,7 +298,6 @@ class IOC(Object):
             severity=severity,
             source=source,
             is_active=is_active,
-            dhash=dhash,
             share_3rd_party=share_3rd_party,
         )
         
