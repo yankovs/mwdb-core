@@ -864,11 +864,16 @@ class RelatedIOCField(BaseField):
         ioc_condition = and_(ioc_type_condition, subfield_condition)
 
         # Find this object in relationship with matching IOC
+        # Use explicit select_from to avoid correlation issues
+        from mwdb.model.ioc import ioc_object
+
+        ioc_ids_subquery = select([ioc_object.c.ioc_id]).select_from(ioc_object).join(
+            IOC, ioc_object.c.ioc_id == IOC.id
+        ).where(ioc_condition)
+
         return Object.id.in_(
-            select([ioc_object.c.object_id]).where(
-                IOC.id.in_(
-                    select([ioc_object.c.ioc_id]).where(ioc_condition)
-                )
+            select([ioc_object.c.object_id]).select_from(ioc_object).where(
+                ioc_object.c.ioc_id.in_(ioc_ids_subquery)
             )
         )
 
