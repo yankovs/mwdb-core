@@ -285,7 +285,7 @@ function getObjectComments(id: string): GetObjectCommentsResponse {
     return axios.get(`/object/${id}/comment`);
 }
 
-function getObjectRelations(id: number): GetObjectRelationsResponse {
+function getObjectRelations(id: string): GetObjectRelationsResponse {
     return axios.get(`/object/${id}/relations`);
 }
 
@@ -707,7 +707,7 @@ function getRemoteObjectComments(
 
 function getRemoteObjectRelations(
     remote: string,
-    id: number
+    id: string
 ): GetRemoteObjectRelationsResponse {
     return axios.get(`/remote/${remote}/api/object/${id}/relations`);
 }

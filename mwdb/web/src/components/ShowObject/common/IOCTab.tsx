@@ -28,7 +28,7 @@ export function IOCTab() {
                 setError(null);
 
                 // Fetch all relations
-                const response = await api.getObjectRelations(parseInt(context.object.id));
+                const response = await api.getObjectRelations(context.object.id!);
                 const allRelations = [
                     ...response.data.parents,
                     ...response.data.children,
@@ -58,9 +58,8 @@ export function IOCTab() {
                     if (child.type === "ioc") continue; // Skip direct IOCs
 
                     try {
-                        const childRelations = await api.getObjectRelations(
-                            parseInt(child.id)
-                        );
+                        const childRelations = await api.getObjectRelations(child.id);
+
                         const childIOCs = [
                             ...childRelations.data.parents,
                             ...childRelations.data.children,
