@@ -151,7 +151,10 @@ class IOCResource(ObjectResource, IOCUploader):
             409:
                 description: IOC already exists
         """
-        return super().post()
+        schema = IOCCreateRequestSchema()
+        obj = load_schema(request.get_json(), schema)
+
+        return self.create_object(obj)
 
 
 class IOCItemResource(ObjectItemResource):
