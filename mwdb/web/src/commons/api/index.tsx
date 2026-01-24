@@ -650,6 +650,12 @@ function createIOC(
     });
 }
 
+function getIOCsByIds(ids: string[]) {
+    return axios.post("/ioc/batch", {
+        ids,
+    });
+}
+
 function getRemoteNames(): GetRemoteNamesResponse {
     return axios.get("/remote");
 }
@@ -893,6 +899,7 @@ export const api = {
     uploadBlob,
     uploadConfig,
     createIOC,
+    getIOCsByIds,
     getRemoteNames,
     pushObjectRemote,
     pullObjectRemote,

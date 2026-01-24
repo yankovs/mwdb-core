@@ -53,6 +53,7 @@ from mwdb.resources.file import (
 from mwdb.resources.group import GroupListResource, GroupMemberResource, GroupResource
 from mwdb.resources.ioc import (
     IOCAutoDetectResource,
+    IOCBatchResource,
     IOCItemResource,
     IOCResource,
     IOCStatsResource,
@@ -324,6 +325,7 @@ api.add_resource(TextBlobItemResource, "/blob/<hash64:identifier>")
 # IOC endpoints
 api.add_resource(IOCResource, "/ioc")
 api.add_resource(IOCItemResource, "/ioc/<hash64:identifier>")
+api.add_resource(IOCBatchResource, "/ioc/batch")
 api.add_resource(IOCStatsResource, "/ioc/stats")
 api.add_resource(IOCAutoDetectResource, "/ioc/auto_detect")
 

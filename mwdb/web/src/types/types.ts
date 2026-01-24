@@ -90,6 +90,11 @@ export type RelatedObject = {
     type: ObjectLegacyType;
     upload_time: string;
     value?: string;
+    // IOC-specific fields (when type is "ioc")
+    ioc_type?: string;
+    severity?: string;
+    source?: string;
+    is_active?: boolean;
 };
 
 export type ConfigType = "static" | "dynamic";

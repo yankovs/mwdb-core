@@ -76,16 +76,34 @@ export function IOCTab() {
                     (rel) => rel.type === "ioc"
                 );
 
+                // Fetch full IOC details using batch API
+                let iocDetails: { [id: string]: RelatedObject } = {};
+                if (iocRelations.length > 0) {
+                    const idsToFetch = iocRelations.map(ioc => ioc.id);
+                    try {
+                        const iocResponse = await api.getIOCsByIds(idsToFetch);
+                        // Create a map of IOC details indexed by id
+                        iocResponse.data.iocs?.forEach((ioc: RelatedObject) => {
+                            iocDetails[ioc.id] = ioc;
+                        });
+                    } catch (err) {
+                        console.error("Error fetching IOC details:", err);
+                        // Continue without details if batch fetch fails
+                    }
+                }
+
                 // Group IOCs by their specific IOC type (ip, domain, etc.)
                 const immediateByType: IOCGroup = {};
                 iocRelations.forEach((ioc) => {
-                    const iocWithType = ioc as IOCWithType;
-                    // Use ioc_type field if available, otherwise use a generic "Unknown" grouping
+                    // Use detailed IOC if available, otherwise use basic relation
+                    const iocData = iocDetails[ioc.id] || ioc;
+                    const iocWithType = iocData as IOCWithType;
                     const iocType = iocWithType.ioc_type || "unknown";
+                    
                     if (!immediateByType[iocType]) {
                         immediateByType[iocType] = [];
                     }
-                    immediateByType[iocType].push(ioc);
+                    immediateByType[iocType].push(iocData);
                 });
 
                 setImmediateIOCs(immediateByType);
@@ -104,9 +122,26 @@ export function IOCTab() {
                             ...childRelations.data.children,
                         ].filter((rel) => rel.type === "ioc");
 
+                        // Fetch full IOC details using batch API
+                        let childIOCDetails: { [id: string]: RelatedObject } = {};
+                        if (childIOCs.length > 0) {
+                            const idsToFetch = childIOCs.map(ioc => ioc.id);
+                            try {
+                                const iocResponse = await api.getIOCsByIds(idsToFetch);
+                                iocResponse.data.iocs?.forEach((ioc: RelatedObject) => {
+                                    childIOCDetails[ioc.id] = ioc;
+                                });
+                            } catch (err) {
+                                console.error("Error fetching transitive IOC details:", err);
+                            }
+                        }
+
                         childIOCs.forEach((ioc) => {
-                            const iocWithType = ioc as IOCWithType;
+                            // Use detailed IOC if available
+                            const iocData = childIOCDetails[ioc.id] || ioc;
+                            const iocWithType = iocData as IOCWithType;
                             const iocType = iocWithType.ioc_type || "unknown";
+                            
                             if (!transitiveByType[iocType]) {
                                 transitiveByType[iocType] = [];
                             }
@@ -154,14 +189,31 @@ export function IOCTab() {
                 (rel) => rel.type === "ioc"
             );
 
+            // Fetch full IOC details using batch API
+            let iocDetails: { [id: string]: RelatedObject } = {};
+            if (iocRelations.length > 0) {
+                const idsToFetch = iocRelations.map(ioc => ioc.id);
+                try {
+                    const iocResponse = await api.getIOCsByIds(idsToFetch);
+                    iocResponse.data.iocs?.forEach((ioc: RelatedObject) => {
+                        iocDetails[ioc.id] = ioc;
+                    });
+                } catch (err) {
+                    console.error("Error fetching IOC details:", err);
+                }
+            }
+
             // Group IOCs by type
             const immediateByType: IOCGroup = {};
             iocRelations.forEach((ioc) => {
-                const iocType = (ioc as IOCWithType).ioc_type || "unknown";
+                const iocData = iocDetails[ioc.id] || ioc;
+                const iocWithType = iocData as IOCWithType;
+                const iocType = iocWithType.ioc_type || "unknown";
+                
                 if (!immediateByType[iocType]) {
                     immediateByType[iocType] = [];
                 }
-                immediateByType[iocType].push(ioc);
+                immediateByType[iocType].push(iocData);
             });
 
             setImmediateIOCs(immediateByType);

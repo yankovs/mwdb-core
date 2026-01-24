@@ -393,3 +393,66 @@ class IOCAutoDetectResource(Resource):
             "value": value,
             "detected_type": detected_type.value if detected_type else None,
         }
+
+
+class IOCBatchResource(Resource):
+    """REST resource for fetching multiple IOCs by ID"""
+    
+    ItemResponseSchema = IOCItemResponseSchema
+
+    @requires_authorization
+    def post(self):
+        """
+        ---
+        summary: Get multiple IOCs by ID
+        description: |
+            Returns detailed information for multiple IOCs specified by their IDs (dhashes).
+            This endpoint is useful for fetching IOC details after getting relationships.
+        security:
+            - bearerAuth: []
+        tags:
+            - ioc
+        requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    ids:
+                      type: array
+                      items:
+                        type: string
+                      description: List of IOC IDs (dhashes) to fetch
+        responses:
+            200:
+                description: List of IOC details
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        iocs:
+                          type: array
+                          items: IOCItemResponseSchema
+            400:
+                description: Invalid request format
+        """
+        data = request.get_json()
+        if not data or "ids" not in data:
+            raise BadRequest("Missing 'ids' in request body")
+        
+        ids = data.get("ids", [])
+        if not isinstance(ids, list):
+            raise BadRequest("'ids' must be a list")
+        
+        # Fetch IOCs with access control
+        ioc_items = []
+        schema = self.ItemResponseSchema()
+        
+        for ioc_id in ids:
+            ioc_obj = IOC.query.filter_by(dhash=ioc_id).first()
+            if ioc_obj and g.auth_user.can_read_object(ioc_obj):
+                ioc_items.append(schema.dump(ioc_obj))
+        
+        return {"iocs": ioc_items}
