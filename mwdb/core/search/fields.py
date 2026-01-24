@@ -757,6 +757,9 @@ class IOCTypeField(BaseField):
             )
 
         ioc_type_value = IOC_TYPE_MAP[ioc_type_str]
+        # Convert to IOCType enum for comparison
+        from mwdb.core.ioc_consts import IOCType as IOCTypeEnum
+        ioc_type_enum = IOCTypeEnum(ioc_type_value)
 
         # Default to 'value' field if not specified
         if len(path_selector) < 2:
@@ -771,7 +774,7 @@ class IOCTypeField(BaseField):
             )
 
         # Filter by IOC type first
-        type_condition = IOC.ioc_type == ioc_type_value
+        type_condition = IOC.ioc_type == ioc_type_enum
         
         # Get condition for the subfield
         subfield_column = IOC_SUBFIELD_MAP[subfield_name]
@@ -826,6 +829,9 @@ class RelatedIOCField(BaseField):
             )
 
         ioc_type_value = IOC_TYPE_MAP[ioc_type_str]
+        # Convert to IOCType enum for comparison
+        from mwdb.core.ioc_consts import IOCType as IOCTypeEnum
+        ioc_type_enum = IOCTypeEnum(ioc_type_value)
 
         # Default to 'value' field if not specified
         if len(path_selector) < 2:
@@ -846,7 +852,7 @@ class RelatedIOCField(BaseField):
         from mwdb.model.ioc import ioc_object
 
         # Create IOC query conditions
-        ioc_type_condition = IOC.ioc_type == ioc_type_value
+        ioc_type_condition = IOC.ioc_type == ioc_type_enum
 
         # Get condition for the subfield value
         subfield_path_selector = path_selector[2:] if len(path_selector) > 2 else []

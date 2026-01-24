@@ -89,6 +89,7 @@ export type RelatedObject = {
     tags: Tag[];
     type: ObjectLegacyType;
     upload_time: string;
+    value?: string;
 };
 
 export type ConfigType = "static" | "dynamic";

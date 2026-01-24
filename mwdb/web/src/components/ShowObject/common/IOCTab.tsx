@@ -16,6 +16,31 @@ type IOCGroup = {
     [key: string]: RelatedObject[];
 };
 
+const IOC_TYPE_GROUPS: { [key: string]: string } = {
+    // Network group
+    ip: "Network",
+    iprange: "Network",
+    url: "Network",
+    domain: "Network",
+    email: "Network",
+    c2_url: "Network",
+    
+    // Hash group
+    md5: "File Hashes",
+    sha1: "File Hashes",
+    sha256: "File Hashes",
+    sha512: "File Hashes",
+    ssdeep: "File Hashes",
+    
+    // File system group
+    file_path: "File System",
+    registry_key: "File System",
+    
+    // Process group
+    process_name: "Process",
+    mutex: "Process",
+};
+
 export function IOCTab() {
     const api = useContext(APIContext);
     const context = useContext(ObjectContext);
@@ -203,6 +228,75 @@ export function IOCTab() {
         }
     };
 
+    const renderIOCGroups = (iocsMap: IOCGroup) => {
+        const hasIOCs = Object.keys(iocsMap).length > 0;
+
+        if (!hasIOCs) {
+            return <p className="text-muted">No IOCs found</p>;
+        }
+
+        // Group IOCs by their category (Network, Hash, etc.)
+        const groupedByCategory: { [category: string]: { [type: string]: RelatedObject[] } } = {};
+
+        Object.entries(iocsMap).forEach(([iocType, iocs]) => {
+            const category = IOC_TYPE_GROUPS[iocType] || "Other";
+            if (!groupedByCategory[category]) {
+                groupedByCategory[category] = {};
+            }
+            groupedByCategory[category][iocType] = iocs;
+        });
+
+        return (
+            <div className="mt-3">
+                {Object.entries(groupedByCategory).map(([category, typeGroups]) => (
+                    <div key={category} className="mb-4">
+                        <h6 className="text-secondary">{category}</h6>
+                        {Object.entries(typeGroups).map(([iocType, iocs]) => (
+                            <div key={iocType} className="mb-3 ml-3">
+                                <div className="font-weight-bold mb-2">
+                                    <span className="badge badge-info">{iocType}</span>
+                                    <span className="ml-2 text-muted">
+                                        ({iocs.length})
+                                    </span>
+                                </div>
+                                <div className="list-group">
+                                    {iocs.map((ioc) => (
+                                        <div
+                                            key={ioc.id}
+                                            className="list-group-item list-group-item-action p-2"
+                                        >
+                                            <div className="d-flex justify-content-between align-items-start">
+                                                <div className="flex-grow-1">
+                                                    <div className="font-monospace small">
+                                                        {ioc.value || ioc.id}
+                                                    </div>
+                                                </div>
+                                                <div className="ml-2">
+                                                    {ioc.tags && ioc.tags.length > 0 && (
+                                                        <div className="d-flex flex-wrap gap-1 justify-content-end">
+                                                            {ioc.tags.map((tag) => (
+                                                                <span
+                                                                    key={tag.tag}
+                                                                    className="badge badge-secondary"
+                                                                >
+                                                                    {tag.tag}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
     const renderIOCGroup = (iocsMap: IOCGroup, title: string) => {
         const hasIOCs = Object.keys(iocsMap).length > 0;
 
@@ -234,10 +328,9 @@ export function IOCTab() {
                                 >
                                     <div className="d-flex justify-content-between align-items-start">
                                         <div className="flex-grow-1">
-                                            <ObjectLink
-                                                type={ioc.type}
-                                                id={ioc.id}
-                                            />
+                                            <div className="font-monospace small">
+                                                {ioc.value || ioc.id}
+                                            </div>
                                         </div>
                                         <div className="ml-2">
                                             {ioc.tags && ioc.tags.length > 0 && (
@@ -299,12 +392,17 @@ export function IOCTab() {
                         )}
                         {!loading && !error && (
                             <>
-                                {renderIOCGroup(immediateIOCs, "Direct IOCs")}
+                                {renderIOCGroups(immediateIOCs)}
                                 {Object.keys(transitiveIOCs).length > 0 && (
-                                    renderIOCGroup(
-                                        transitiveIOCs,
-                                        "IOCs from Related Objects"
-                                    )
+                                    <>
+                                        <div className="mt-5">
+                                            <h6>IOCs from Related Objects</h6>
+                                        </div>
+                                        {renderIOCGroup(
+                                            transitiveIOCs,
+                                            ""
+                                        )}
+                                    </>
                                 )}
                                 {Object.keys(immediateIOCs).length === 0 &&
                                     Object.keys(transitiveIOCs).length === 0 && (
