@@ -105,7 +105,11 @@ class IOC(Object):
     threat indicators. IOCs can be related to files, malware configurations, or other objects
     through the ioc_object relationship table.
     """
-    
+
+    # Use joined-table inheritance: separate `ioc` table linked to `object` by id
+    __tablename__ = "ioc"
+    id = db.Column(db.Integer, db.ForeignKey("object.id"), primary_key=True)
+
     ioc_type = db.Column(
         IOCTypeField,
         index=True,
