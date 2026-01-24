@@ -738,11 +738,12 @@ class IOCTypeField(BaseField):
         """
         Handles IOC type-based queries.
         path_selector[0] is the IOC type (ip, domain, etc.)
-        path_selector[1:] are subfields (value, severity, etc.)
+        path_selector[1:] are optional subfields (value, severity, etc.)
+        If no subfield specified, defaults to 'value'.
         """
-        if len(path_selector) < 2:
+        if len(path_selector) < 1:
             raise FieldNotQueryableException(
-                "IOC query requires type and field (e.g., ioc.ip.value or ioc.domain.severity)"
+                "IOC query requires type (e.g., ioc.ip or ioc.domain.severity)"
             )
 
         ioc_type_str, _ = path_selector[0]
@@ -757,8 +758,11 @@ class IOCTypeField(BaseField):
 
         ioc_type_value = IOC_TYPE_MAP[ioc_type_str]
 
-        # Get the subfield (value, severity, source, etc.)
-        subfield_name, _ = path_selector[1]
+        # Default to 'value' field if not specified
+        if len(path_selector) < 2:
+            subfield_name = "value"
+        else:
+            subfield_name, _ = path_selector[1]
 
         if subfield_name not in IOC_SUBFIELD_MAP:
             valid_fields = ", ".join(IOC_SUBFIELD_MAP.keys())
@@ -773,7 +777,7 @@ class IOCTypeField(BaseField):
         subfield_column = IOC_SUBFIELD_MAP[subfield_name]
         
         # Create a new path selector for the subfield query
-        subfield_path_selector = path_selector[2:]
+        subfield_path_selector = path_selector[2:] if len(path_selector) > 2 else []
         if not subfield_path_selector:
             # Default to value field if not specified
             subfield_path_selector = [(subfield_name, None)]
@@ -804,11 +808,12 @@ class RelatedIOCField(BaseField):
         """
         Handles related IOC queries.
         path_selector[0] is the IOC type (ip, domain, etc.)
-        path_selector[1:] are IOC subfields (value, severity, etc.)
+        path_selector[1:] are optional IOC subfields (value, severity, etc.)
+        If no subfield specified, defaults to 'value'.
         """
-        if len(path_selector) < 2:
+        if len(path_selector) < 1:
             raise FieldNotQueryableException(
-                "Related IOC query requires type and field (e.g., file.ioc.ip.value)"
+                "Related IOC query requires type (e.g., file.ioc.ip or file.ioc.domain.severity)"
             )
 
         ioc_type_str, _ = path_selector[0]
@@ -822,8 +827,11 @@ class RelatedIOCField(BaseField):
 
         ioc_type_value = IOC_TYPE_MAP[ioc_type_str]
 
-        # Get the subfield (value, severity, source, etc.)
-        subfield_name, _ = path_selector[1]
+        # Default to 'value' field if not specified
+        if len(path_selector) < 2:
+            subfield_name = "value"
+        else:
+            subfield_name, _ = path_selector[1]
 
         if subfield_name not in IOC_SUBFIELD_MAP:
             valid_fields = ", ".join(IOC_SUBFIELD_MAP.keys())
@@ -841,7 +849,7 @@ class RelatedIOCField(BaseField):
         ioc_type_condition = IOC.ioc_type == ioc_type_value
 
         # Get condition for the subfield value
-        subfield_path_selector = path_selector[2:]
+        subfield_path_selector = path_selector[2:] if len(path_selector) > 2 else []
         if not subfield_path_selector:
             subfield_path_selector = [(subfield_name, None)]
 

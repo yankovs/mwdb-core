@@ -38,13 +38,35 @@ from .fields import (
 )
 from .parse_helpers import PathSelector, parse_field_path
 
+# Import IOC_TYPE_MAP from fields
+try:
+    from .fields import IOC_TYPE_MAP
+except ImportError:
+    # Fallback: define IOC types locally
+    IOC_TYPE_MAP = {
+        "ip": "ip",
+        "iprange": "iprange",
+        "url": "url",
+        "domain": "domain",
+        "email": "email",
+        "md5": "md5",
+        "sha1": "sha1",
+        "sha256": "sha256",
+        "sha512": "sha512",
+        "ssdeep": "ssdeep",
+        "file_path": "file_path",
+        "registry_key": "registry_key",
+        "c2_url": "c2_url",
+        "mutex": "mutex",
+        "process_name": "process_name",
+    }
+
 object_mapping: Dict[str, Type[Object]] = {
     "file": File,
     "object": Object,
     "static": Config,  # legacy
     "config": Config,
     "blob": TextBlob,
-    "ioc": IOC,
 }
 
 field_mapping: Dict[str, Dict[str, BaseField]] = {
@@ -96,7 +118,6 @@ field_mapping: Dict[str, Dict[str, BaseField]] = {
         "ioc": RelatedIOCField(TextBlob),
     },
     IOC.__name__: {
-        "ioc": IOCTypeField(),
         "ioc_type": StringField(IOC.ioc_type),
         "value": StringField(IOC.value),
         "severity": StringField(IOC.severity),
@@ -131,7 +152,14 @@ def get_field_mapper(
         field = field_mapping[selected_type.__name__][field_name]
     elif field_name in field_mapping[Object.__name__]:
         field = field_mapping[Object.__name__][field_name]
+    elif selected_type.__name__ == IOC.__name__ and field_name in IOC_TYPE_MAP:
+        # Special case: querying IOC directly with type name (e.g., ioc.ip:* or ip:* when querying IOCs)
+        # Return IOCTypeField with the field_path including the IOC type
+        field = IOCTypeField()
+        # Return full path from field name onwards so IOCTypeField can extract the type
+        return field, field_path
     else:
         raise FieldNotQueryableException(f"No such field {field_name}")
 
-    return field, field_path
+    # Return the field and the path AFTER the field name (for subpaths)
+    return field, field_path[1:]
