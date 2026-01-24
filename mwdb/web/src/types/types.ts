@@ -327,8 +327,10 @@ export type RelationItem = {
     id: string;
     tags: Tag[];
     type: ObjectLegacyType;
-    upload_time: string;
-};
+    upload_time: string;    value?: string;
+    ioc_type?: string;
+    severity?: string;
+    is_active?: boolean;};
 
 export type Reason = {
     reasonType: string;

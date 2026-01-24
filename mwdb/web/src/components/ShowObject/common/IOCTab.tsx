@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -41,6 +42,11 @@ const IOC_TYPE_GROUPS: { [key: string]: string } = {
     mutex: "Process",
 };
 
+interface IOCWithType extends RelatedObject {
+    ioc_type?: string;
+    value?: string;
+}
+
 export function IOCTab() {
     const api = useContext(APIContext);
     const context = useContext(ObjectContext);
@@ -70,10 +76,12 @@ export function IOCTab() {
                     (rel) => rel.type === "ioc"
                 );
 
-                // Group IOCs by type
+                // Group IOCs by their specific IOC type (ip, domain, etc.)
                 const immediateByType: IOCGroup = {};
                 iocRelations.forEach((ioc) => {
-                    const iocType = ioc.type || "unknown";
+                    const iocWithType = ioc as IOCWithType;
+                    // Use ioc_type field if available, otherwise use a generic "Unknown" grouping
+                    const iocType = iocWithType.ioc_type || "unknown";
                     if (!immediateByType[iocType]) {
                         immediateByType[iocType] = [];
                     }
@@ -97,7 +105,8 @@ export function IOCTab() {
                         ].filter((rel) => rel.type === "ioc");
 
                         childIOCs.forEach((ioc) => {
-                            const iocType = ioc.type || "unknown";
+                            const iocWithType = ioc as IOCWithType;
+                            const iocType = iocWithType.ioc_type || "unknown";
                             if (!transitiveByType[iocType]) {
                                 transitiveByType[iocType] = [];
                             }
@@ -148,7 +157,7 @@ export function IOCTab() {
             // Group IOCs by type
             const immediateByType: IOCGroup = {};
             iocRelations.forEach((ioc) => {
-                const iocType = ioc.type || "unknown";
+                const iocType = (ioc as IOCWithType).ioc_type || "unknown";
                 if (!immediateByType[iocType]) {
                     immediateByType[iocType] = [];
                 }
@@ -172,7 +181,7 @@ export function IOCTab() {
                     ].filter((rel) => rel.type === "ioc");
 
                     childIOCs.forEach((ioc) => {
-                        const iocType = ioc.type || "unknown";
+                        const iocType = (ioc as IOCWithType).ioc_type || "unknown";
                         if (!transitiveByType[iocType]) {
                             transitiveByType[iocType] = [];
                         }
@@ -260,34 +269,42 @@ export function IOCTab() {
                                     </span>
                                 </div>
                                 <div className="list-group">
-                                    {iocs.map((ioc) => (
-                                        <div
-                                            key={ioc.id}
-                                            className="list-group-item list-group-item-action p-2"
-                                        >
-                                            <div className="d-flex justify-content-between align-items-start">
-                                                <div className="flex-grow-1">
-                                                    <div className="font-monospace small">
-                                                        {ioc.value || ioc.id}
+                                    {iocs.map((ioc) => {
+                                        const iocWithType = ioc as IOCWithType;
+                                        return (
+                                            <div
+                                                key={ioc.id}
+                                                className="list-group-item list-group-item-action p-2"
+                                            >
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <div className="flex-grow-1">
+                                                        <Link
+                                                            to={`/ioc/${ioc.id}`}
+                                                            className="text-decoration-none"
+                                                        >
+                                                            <div className="font-monospace small">
+                                                                {iocWithType.value || ioc.id}
+                                                            </div>
+                                                        </Link>
+                                                    </div>
+                                                    <div className="ml-2">
+                                                        {ioc.tags && ioc.tags.length > 0 && (
+                                                            <div className="d-flex flex-wrap gap-1 justify-content-end">
+                                                                {ioc.tags.map((tag) => (
+                                                                    <span
+                                                                        key={tag.tag}
+                                                                        className="badge badge-secondary"
+                                                                    >
+                                                                        {tag.tag}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
-                                                <div className="ml-2">
-                                                    {ioc.tags && ioc.tags.length > 0 && (
-                                                        <div className="d-flex flex-wrap gap-1 justify-content-end">
-                                                            {ioc.tags.map((tag) => (
-                                                                <span
-                                                                    key={tag.tag}
-                                                                    className="badge badge-secondary"
-                                                                >
-                                                                    {tag.tag}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         ))}

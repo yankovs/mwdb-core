@@ -757,9 +757,15 @@ class IOCTypeField(BaseField):
             )
 
         ioc_type_value = IOC_TYPE_MAP[ioc_type_str]
-        # Convert to IOCType enum for comparison
+        # Convert to IOCType enum for validation, but use string for DB comparison
         from mwdb.core.ioc_consts import IOCType as IOCTypeEnum
-        ioc_type_enum = IOCTypeEnum(ioc_type_value)
+        try:
+            IOCTypeEnum(ioc_type_value)  # Validate the type exists
+        except ValueError:
+            valid_types = ", ".join(IOC_TYPE_MAP.keys())
+            raise FieldNotQueryableException(
+                f"Unknown IOC type '{ioc_type_str}'. Valid types: {valid_types}"
+            )
 
         # Default to 'value' field if not specified
         if len(path_selector) < 2:
@@ -773,8 +779,8 @@ class IOCTypeField(BaseField):
                 f"Unknown IOC subfield '{subfield_name}'. Valid fields: {valid_fields}"
             )
 
-        # Filter by IOC type first
-        type_condition = IOC.ioc_type == ioc_type_enum
+        # Filter by IOC type first - compare with string value since DB stores strings
+        type_condition = IOC.ioc_type == ioc_type_value
         
         # Get condition for the subfield
         subfield_column = IOC_SUBFIELD_MAP[subfield_name]
@@ -829,9 +835,15 @@ class RelatedIOCField(BaseField):
             )
 
         ioc_type_value = IOC_TYPE_MAP[ioc_type_str]
-        # Convert to IOCType enum for comparison
+        # Convert to IOCType enum for validation, but use string for DB comparison
         from mwdb.core.ioc_consts import IOCType as IOCTypeEnum
-        ioc_type_enum = IOCTypeEnum(ioc_type_value)
+        try:
+            IOCTypeEnum(ioc_type_value)  # Validate the type exists
+        except ValueError:
+            valid_types = ", ".join(IOC_TYPE_MAP.keys())
+            raise FieldNotQueryableException(
+                f"Unknown IOC type '{ioc_type_str}'. Valid types: {valid_types}"
+            )
 
         # Default to 'value' field if not specified
         if len(path_selector) < 2:
@@ -851,8 +863,8 @@ class RelatedIOCField(BaseField):
         # Using the ioc_object relationship table
         from mwdb.model.ioc import ioc_object
 
-        # Create IOC query conditions
-        ioc_type_condition = IOC.ioc_type == ioc_type_enum
+        # Create IOC query conditions - compare with string value since DB stores strings
+        ioc_type_condition = IOC.ioc_type == ioc_type_value
 
         # Get condition for the subfield value
         subfield_path_selector = path_selector[2:] if len(path_selector) > 2 else []

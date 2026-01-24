@@ -6,6 +6,7 @@ import {
     faTable,
     faScroll,
     faUser,
+    faVial,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -56,6 +57,15 @@ export function Navigation() {
                                 icon={faScroll}
                             />
                             Blobs
+                        </Link>
+                    </li>
+                    <li className="nav-item">
+                        <Link className="nav-link" to={"/iocs"}>
+                            <FontAwesomeIcon
+                                className="navbar-icon"
+                                icon={faVial}
+                            />
+                            IOCs
                         </Link>
                     </li>
                     <li className="nav-item">
